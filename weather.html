@@ -44,15 +44,15 @@ async function showCities() {
     const cities = [randomCity, 'San Antonio','Dallas','Tokyo', 'Kibondo'];
 
     text = "<h3>City</h3>\n<table>\n<tr><th>City</th><th> Current Weather</th><th>Sunrise & Sunset</th><th>Forecast</th></tr>\n";
-    
+   
     cities.forEach(function (theCity) {
-		text += "<tr>";
+        text += "<tr>";
         text += "<tr><td>" + theCity + "</td>";
         text += "<td><button id='weatherButton_" + theCity + "'>Get Current Weather</button></td>";
-		text += "<td><button id='sunriseSunsetButton_" + theCity + "'>Get Sunrise and Sunset</button></td>";
-		text += "<td><button id='forecastButton_" + theCity + "'>Get Forecast</button></td>";
-		text += "<td><button id='hourButton_" + theCity + "'>Get Hourly Conditions</button></td>";
-		text += "</tr>";
+        text += "<td><button id='sunriseSunsetButton_" + theCity + "'>Get Sunrise and Sunset</button></td>";
+        text += "<td><button id='forecastButton_" + theCity + "'>Get Forecast</button></td>";
+        text += "<td><button id='hourButton_" + theCity + "'>Get Hourly Conditions</button></td>";
+        text += "</tr>";
     });
 
     text += "</table>\n";
@@ -61,26 +61,26 @@ async function showCities() {
     // Attach click event handlers to the buttons
     cities.forEach(function (theCity) {
         const buttonId = 'weatherButton_' + theCity;
-		const sunriseSunsetButtonId ='sunriseSunsetButton_'+ theCity;
-		const forecastButtonId = 'forecastButton_' + theCity;
+        const sunriseSunsetButtonId ='sunriseSunsetButton_'+ theCity;
+        const forecastButtonId = 'forecastButton_' + theCity;
+        const hourButtonId = 'hourButton_' + theCity;
 
         const buttonElement = document.getElementById(buttonId);
-		buttonElement.addEventListener('click', function() {
+        buttonElement.addEventListener('click', function() {
         getCurrentWeather(theCity);
         });
-		const sunriseSunsetButtonElement = document.getElementById(sunriseSunsetButtonId);
-		sunriseSunsetButtonElement.addEventListener('click', function(){
-			getSunriseSunset(theCity);
-		});
-		const forecastButtonElement = document.getElementById(forecastButtonId);
-		forecastButtonElement.addEventListener('click', function(){
-			getForecast(theCity);
-		});
-		const hourButtonId = 'hourButton_' + theCity;
-		const hourButtonElement = document.getElementById(hourButtonId);
-		hourButtonElement.addEventListener('click', function(){
-			getHour(theCity);
-		});	
+        const sunriseSunsetButtonElement = document.getElementById(sunriseSunsetButtonId);
+        sunriseSunsetButtonElement.addEventListener('click', function(){
+            getSunriseSunset(theCity);
+        });
+        const forecastButtonElement = document.getElementById(forecastButtonId);
+        forecastButtonElement.addEventListener('click', function(){
+            getForecast(theCity);
+        });
+        const hourButtonElement = document.getElementById(hourButtonId);
+        hourButtonElement.addEventListener('click', function(){
+            getHourlyForecast(theCity);
+        });
     });
 }
 
@@ -96,12 +96,12 @@ function getForecast( city )
 function showForecast( data )
 {
     console.log( JSON.stringify(data))
-	text="<h3>Forecast</h3>\n<table>\n<tr><th>Date</th><th>Max (F)</th><th>Min (F)</th></tr>\n";
-        
+    text="<h3>Forecast</h3>\n<table>\n<tr><th>Date</th><th>Max (F)</th><th>Min (F)</th></tr>\n";
+       
      data.forecast.forecastday.forEach( function( theDay ){
         let theAction = 'onclick="getCountry( \'' + "');\"";
         console.log( theAction );
-		text += "<tr><td><a " + theAction + ">" + theDay.date + "</a></td>";
+        text += "<tr><td><a " + theAction + ">" + theDay.date + "</a></td>";
         text += "<td>" + theDay.day.maxtemp_f + "</td>";
         text += "<td>" + theDay.day.mintemp_f + "</td>";
         text += "<td><img src='" + theDay.day.condition.icon + "' alt='Weather Icon'></td></tr>";        
@@ -128,20 +128,20 @@ function getCurrentWeather(city) {
         });
 }
 function getSunriseSunset(city){
-	const sunriseSunsetURL = apiURL + "astronomy.json?q=" + city;
-	fetch(sunriseSunsetURL, options)
-	.then(res => res.json())
-	.then(data => {
-		console.log(JSON.stringify(data));
-		const sunriseSunsetInfo = "<h3>Sunrise and Sunset</h3>\n<table>\n<tr><th>Sunrise</th><th>Sunset</th></tr>\n" +
+    const sunriseSunsetURL = apiURL + "astronomy.json?q=" + city;
+    fetch(sunriseSunsetURL, options)
+    .then(res => res.json())
+    .then(data => {
+        console.log(JSON.stringify(data));
+        const sunriseSunsetInfo = "<h3>Sunrise and Sunset</h3>\n<table>\n<tr><th>Sunrise</th><th>Sunset</th></tr>\n" +
                 "<tr><td>"+ data.astronomy.astro.sunrise + "</td><td>" + data.astronomy.astro.sunset + "</td></tr>\n" +
                 "</table>\n";
-		document.getElementById('sunriseSunset').innerHTML = sunriseSunsetInfo;
-	})
-	.catch(error => {
-		console.error("Error fetching sunrise and sunset data:", error);
-		document.getElementById('sunriseSunset').innerHTML = "<p>Error fetching sunrise and sunset data</p>";
-	});
+        document.getElementById('sunriseSunset').innerHTML = sunriseSunsetInfo;
+    })
+    .catch(error => {
+        console.error("Error fetching sunrise and sunset data:", error);
+        document.getElementById('sunriseSunset').innerHTML = "<p>Error fetching sunrise and sunset data</p>";
+    });
 }
 function getHourlyForecast(city) {
     const getHourlyForecastURL = `${apiURL}forecast.json?q=${city}&days=3`; // Use the forecast endpoint
@@ -188,8 +188,8 @@ function showCurrent(data) {
     <h1>Weather</h1>
     <div id="theTable"></div>
     <div id="currentWeather"></div> <!-- New div for displaying current weather -->
-	<div id="sunriseSunset"></div>
-	<div id="hourlyConditions"></id>
+    <div id="sunriseSunset"></div>
+    <div id="hourlyConditions"></id>
     <script>
         showCities();
     </script>
