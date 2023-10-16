@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="weather.css">
+    <title>Weather</title>
+        <script>
+
+const apiURL = 'https://weatherapi-com.p.rapidapi.com/';
+const options = {
+    method: 'GET',
+    headers: {
+        'X-RapidAPI-Key': 'c7b1f324e1mshb12ea13d29b6162p148a5ajsn7662b5c52612',
+        'X-RapidAPI-Host': 'weatherapi-com.p.rapidapi.com'
+    }
+};
+// Function to fetch a random city from REST Countries API
+async function getRandomCity() {
+    try {
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        const countries = await response.json();
+
+        if (!countries || countries.length === 0) {
+            throw new Error('No countries found in the API response.');
+        }
+
+        // Extract capitals from the countries data
+        const capitals = countries.map(country => country.capital);
+
+        // Get a random capital from the capitals array
+        const randomCapital = capitals[Math.floor(Math.random() * capitals.length)];
+        return randomCapital;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+// Example usage
+getRandomCity().then(randomCity => {
+    console.log('Random City:', randomCity);
+});
+
+async function showCities() {
+    const randomCity = await getRandomCity(); // Get a random city from the API response
+    const cities = [randomCity, 'San Antonio','Dallas','Tokyo', 'Kibondo'];
+
+    text = "<h3>City</h3>\n<table>\n<tr><th>City</th><th> Current Weather</th><th>Sunrise & Sunset</th><th>Forecast</th></tr>\n";
+    
+    cities.forEach(function (theCity) {
+		text += "<tr>";
+        text += "<tr><td>" + theCity + "</td>";
+        text += "<td><button id='weatherButton_" + theCity + "'>Get Current Weather</button></td>";
+		text += "<td><button id='sunriseSunsetButton_" + theCity + "'>Get Sunrise and Sunset</button></td>";
+		text += "<td><button id='forecastButton_" + theCity + "'>Get Forecast</button></td>";
+		text += "<td><button id='hourButton_" + theCity + "'>Get Hourly Conditions</button></td>";
+		text += "</tr>";
+    });
+
+    text += "</table>\n";
+    document.getElementById('theTable').innerHTML = text;
+
+    // Attach click event handlers to the buttons
+    cities.forEach(function (theCity) {
+        const buttonId = 'weatherButton_' + theCity;
+		const sunriseSunsetButtonId ='sunriseSunsetButton_'+ theCity;
+		const forecastButtonId = 'forecastButton_' + theCity;
+
+        const buttonElement = document.getElementById(buttonId);
+		buttonElement.addEventListener('click', function() {
+        getCurrentWeather(theCity);
+        });
+		const sunriseSunsetButtonElement = document.getElementById(sunriseSunsetButtonId);
+		sunriseSunsetButtonElement.addEventListener('click', function(){
+			getSunriseSunset(theCity);
+		});
+		const forecastButtonElement = document.getElementById(forecastButtonId);
+		forecastButtonElement.addEventListener('click', function(){
+			getForecast(theCity);
+		});
+		const hourButtonId = 'hourButton_' + theCity;
+		const hourButtonElement = document.getElementById(hourButtonId);
+		hourButtonElement.addEventListener('click', function(){
+			getHour(theCity);
+		});	
+    });
+}
+
+function getForecast( city )
+{
+    theURL = apiURL + "forecast.json?q=" + city +"&days=3";
+    //example: https://restcountries.com/v3.1/region/Europe
+    console.log( theURL );
+    fetch( theURL, options )                                        //get the raw answer
+        .then( res => res.json() )                      //get structure
+        .then( data => showForecast( data, city ) );          //convert and show
+}
+function showForecast( data )
+{
+    console.log( JSON.stringify(data))
+	text="<h3>Forecast</h3>\n<table>\n<tr><th>Date</th><th>Max (F)</th><th>Min (F)</th></tr>\n";
+        
+     data.forecast.forecastday.forEach( function( theDay ){
+        let theAction = 'onclick="getCountry( \'' + "');\"";
+        console.log( theAction );
+		text += "<tr><td><a " + theAction + ">" + theDay.date + "</a></td>";
+        text += "<td>" + theDay.day.maxtemp_f + "</td>";
+        text += "<td>" + theDay.day.mintemp_f + "</td>";
+        text += "<td><img src='" + theDay.day.condition.icon + "' alt='Weather Icon'></td></tr>";        
+    });
+
+    text += `<tr><td colspan='4'><button onclick='showCities()'>Back to Main Page</button></td></tr>\n`;
+    document.getElementById('theTable').innerHTML += text;
+}
+
+function getCurrentWeather(city) {
+    const currentWeatherURL = apiURL + "current.json?q=" + city;
+    fetch(currentWeatherURL, options)
+        .then(res => res.json())
+        .then(data => {
+            console.log(JSON.stringify(data)); // Log the response data for debugging
+            const weatherInfo = "<h3>Current Weather</h3>\n<table>\n<tr><th>Condition</th><th>Temperature (F)</th></tr>\n" +
+                "<tr><td>"+ data.current.condition.text + "</td><td>" + data.current.temp_f + "</td><td><img src='"+data.current.condition.icon+"'alt='Weather Icon'><td></tr>\n" +
+                "</table>\n";
+            document.getElementById('currentWeather').innerHTML = weatherInfo;
+        })
+        .catch(error => {
+            console.error("Error fetching current weather:", error);
+            document.getElementById('currentWeather').innerHTML = "<p>Error fetching current weather data</p>";
+        });
+}
+function getSunriseSunset(city){
+	const sunriseSunsetURL = apiURL + "astronomy.json?q=" + city;
+	fetch(sunriseSunsetURL, options)
+	.then(res => res.json())
+	.then(data => {
+		console.log(JSON.stringify(data));
+		const sunriseSunsetInfo = "<h3>Sunrise and Sunset</h3>\n<table>\n<tr><th>Sunrise</th><th>Sunset</th></tr>\n" +
+                "<tr><td>"+ data.astronomy.astro.sunrise + "</td><td>" + data.astronomy.astro.sunset + "</td></tr>\n" +
+                "</table>\n";
+		document.getElementById('sunriseSunset').innerHTML = sunriseSunsetInfo;
+	})
+	.catch(error => {
+		console.error("Error fetching sunrise and sunset data:", error);
+		document.getElementById('sunriseSunset').innerHTML = "<p>Error fetching sunrise and sunset data</p>";
+	});
+}
+function getHourlyForecast(city) {
+    const getHourlyForecastURL = `${apiURL}forecast.json?q=${city}&days=3`; // Use the forecast endpoint
+
+    fetch(getHourlyForecastURL, options)
+        .then(res => res.json())
+        .then(data => {
+            console.log(JSON.stringify(data));
+
+            // Check if the response contains forecast data
+            if (data.forecast && data.forecast.forecastday && data.forecast.forecastday[0].hour) {
+                const hourlyData = data.forecast.forecastday[0].hour;
+
+                let hourlyConditions = "<h3>Hourly Conditions</h3>\n<table>\n<tr><th>Time</th><th>Temp (F)</th><th>Condition</th></tr>\n";
+
+                // Loop through the hourly data and display the information
+                hourlyData.forEach(hour => {
+                    hourlyConditions += `<tr><td>${hour.time}</td><td>${hour.temp_f}</td><td>${hour.condition.text}</td><td><img src="${hour.condition.icon}" alt="Weather Icon"></td></tr>`;
+                });
+
+                hourlyConditions += "</table>\n";
+                document.getElementById('hourlyConditions').innerHTML = hourlyConditions;
+            } else {
+                // Handle the case where hourly data is not available
+                document.getElementById('hourlyConditions').innerHTML = "<p>Hourly data not available.</p>";
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching hourly conditions:", error);
+            document.getElementById('hourlyConditions').innerHTML = "<p>Error fetching hourly conditions data</p>";
+        });
+}
+
+function showCurrent(data) {
+    console.log(JSON.stringify(data));
+    text = "<h3>Current Weather</h3>\n<table>\n<tr><th>Condition</th><th>Temperature (C)</th><th>Temperature (F)</th></tr>\n";
+    text += "<tr><td>" + data.current.condition.text + "</td><td>" + data.current.temp_c + "</td><td>"+ data.current.temp_f +"</td></tr>\n";
+    text += "</table>\n";
+    document.getElementById('currentWeather').innerHTML = text;
+}
+        </script>
+</head>
+<body>
+    <h1>Weather</h1>
+    <div id="theTable"></div>
+    <div id="currentWeather"></div> <!-- New div for displaying current weather -->
+	<div id="sunriseSunset"></div>
+	<div id="hourlyConditions"></id>
+    <script>
+        showCities();
+    </script>
+</body>
+</html>
